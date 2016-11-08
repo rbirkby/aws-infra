@@ -5,7 +5,7 @@ Resources:
   VPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: 10.10.0.0/16
+      CidrBlock: 10.20.0.0/16
       Tags:
         - {Key: Name, Value: TestVPC}
         - {Key: environment, Value: dev}  
