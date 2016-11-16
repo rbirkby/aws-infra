@@ -10,15 +10,58 @@ Resources:
   DummyBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: dummy-codepipeline-artifactstore
+      BucketName: codepipeline-dummy-artifactstore
       Tags:
         - {Key: environment, Value: prod}  
+
+  CloudFormationServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: cloudformation-service-role
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: cloudformation.amazonaws.com
+          Action: sts:AssumeRole
+
+  CodePipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: codepipeline-service-role
+      Policies:
+      - PolicyName: codepipeline-policy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Action:
+            - s3:*
+            - sns:*
+            - cloudformation:*
+            - iam:PassRole
+            Resource: "*"
+            Effect: Allow
+          - Action:
+            - lambda:InvokeFunction
+            - lambda:ListFunctions
+            Resource: "*"
+            Effect: Allow
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: codepipeline.amazonaws.com
+          Action: sts:AssumeRole
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties: 
-      Name: Provisioner
-      RoleArn: arn:aws:iam::122053366500:role/AWS-CodePipeline-Service
+      Name: stack-builder
+      RoleArn: !GetAtt CodePipelineServiceRole.Arn
       Stages: 
         - Name: Source
           Actions: 
@@ -47,9 +90,9 @@ Resources:
                 Provider: CloudFormation
               Configuration: 
                 ActionMode: CREATE_UPDATE
-                RoleArn: arn:aws:iam::122053366500:role/provisioner
+                RoleArn: !GetAtt CloudFormationServiceRole.Arn
                 StackName: vpc 
-                TemplatePath: SourceTree::vpc.yaml 
+                TemplatePath: SourceTree::vpc.yaml
             - Name: zimicats
               InputArtifacts: 
                 - Name: SourceTree
@@ -60,7 +103,7 @@ Resources:
                 Provider: CloudFormation
               Configuration: 
                 ActionMode: CREATE_UPDATE
-                RoleArn: arn:aws:iam::122053366500:role/provisioner
+                RoleArn: !GetAtt CloudFormationServiceRole.Arn
                 StackName: zimicats
                 TemplatePath: SourceTree::zimicats.yaml 
                 Capabilities: CAPABILITY_NAMED_IAM 
