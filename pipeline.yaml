@@ -1,0 +1,69 @@
+Description: |
+  AWS CodePipeline for deploying CloudFormation templates. https://github.com/rbirkby/aws-infra
+
+Parameters:
+  GitHubToken: 
+    Type: String
+    Description: GitHub OAuth Personal Access Token with admin:repo_hook and repo scopes
+
+Resources:
+  DummyBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: dummy-codepipeline-artifactstore
+      Tags:
+        - {Key: environment, Value: prod}  
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties: 
+      Name: Provisioner
+      RoleArn: arn:aws:iam::122053366500:role/AWS-CodePipeline-Service
+      Stages: 
+        - Name: Source
+          Actions: 
+            - Name: SourceAction
+              ActionTypeId: 
+                Category: Source
+                Owner: ThirdParty
+                Version: 1
+                Provider: GitHub
+              OutputArtifacts: 
+                - Name: SourceTree
+              Configuration: 
+                Owner: rbirkby
+                Repo: aws-infra
+                Branch: master
+                OAuthToken: !Ref GitHubToken
+        - Name: infrastructure-builder
+          Actions: 
+            - Name: vpc
+              InputArtifacts: 
+                - Name: SourceTree
+              ActionTypeId: 
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration: 
+                ActionMode: CREATE_UPDATE
+                RoleArn: arn:aws:iam::122053366500:role/provisioner
+                StackName: vpc 
+                TemplatePath: SourceTree::vpc.yaml 
+            - Name: zimicats
+              InputArtifacts: 
+                - Name: SourceTree
+              ActionTypeId: 
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration: 
+                ActionMode: CREATE_UPDATE
+                RoleArn: arn:aws:iam::122053366500:role/provisioner
+                StackName: zimicats
+                TemplatePath: SourceTree::zimicats.yaml 
+                Capabilities: CAPABILITY_NAMED_IAM 
+      ArtifactStore: 
+        Type: S3
+        Location: !Ref DummyBucket

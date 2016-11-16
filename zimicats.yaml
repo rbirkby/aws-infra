@@ -1,5 +1,5 @@
 Description: |
-  Backs up the zimicats and timetomine server
+  Backs up the zimicats and timetomine server. https://github.com/rbirkby/aws-infra
 
 Resources:
   User:
@@ -26,7 +26,7 @@ Resources:
     Properties:
       BucketName: zimicats-minecraft-backup
       Tags:
-        - {Key: environment, Value: dev}  
+        - {Key: environment, Value: prod}  
 
   AccessKey:
     Type: AWS::IAM::AccessKey

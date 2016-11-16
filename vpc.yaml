@@ -1,5 +1,5 @@
 Description: |
-  Simple VPC to prove CloudFormation stack
+  Simple VPC to prove CloudFormation stack. https://github.com/rbirkby/aws-infra
 
 Resources:
   VPC:
