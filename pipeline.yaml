@@ -7,7 +7,7 @@ Parameters:
     Description: GitHub OAuth Personal Access Token with admin:repo_hook and repo scopes
 
 Resources:
-  DummyBucket:
+  ArtifactBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: codepipeline-dummy-artifactstore
@@ -107,6 +107,19 @@ Resources:
                 StackName: zimicats
                 TemplatePath: SourceTree::zimicats.yaml 
                 Capabilities: CAPABILITY_NAMED_IAM 
+            - Name: iot
+              InputArtifacts: 
+                - Name: SourceTree
+              ActionTypeId: 
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration: 
+                ActionMode: CREATE_UPDATE
+                RoleArn: !GetAtt CloudFormationServiceRole.Arn
+                StackName: iot 
+                TemplatePath: SourceTree::iot.yaml                
       ArtifactStore: 
         Type: S3
-        Location: !Ref DummyBucket
+        Location: !Ref ArtifactBucket
