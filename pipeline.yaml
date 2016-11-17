@@ -120,6 +120,7 @@ Resources:
                 RoleArn: !GetAtt CloudFormationServiceRole.Arn
                 StackName: iot 
                 TemplatePath: SourceTree::iot.yaml                
+                Capabilities: CAPABILITY_NAMED_IAM 
       ArtifactStore: 
         Type: S3
         Location: !Ref DummyBucket

@@ -1,5 +1,5 @@
 Description: |
-  Creates lambda functions for iot
+  Creates lambda functions for iot. https://github.com/rbirkby/aws-infra
 
 Resources:
 
@@ -7,8 +7,19 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       RoleName: lambda-service-role
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AdministratorAccess
+      # ManagedPolicyArns:
+      #   - arn:aws:iam::aws:policy/AdministratorAccess
+      Policies:
+      - PolicyName: lambda-policy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: "arn:aws:logs:*:*:*"
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
