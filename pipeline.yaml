@@ -7,7 +7,7 @@ Parameters:
     Description: GitHub OAuth Personal Access Token with admin:repo_hook and repo scopes
 
 Resources:
-  ArtifactBucket:
+  DummyBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: codepipeline-dummy-artifactstore
@@ -122,4 +122,4 @@ Resources:
                 TemplatePath: SourceTree::iot.yaml                
       ArtifactStore: 
         Type: S3
-        Location: !Ref ArtifactBucket
+        Location: !Ref DummyBucket
