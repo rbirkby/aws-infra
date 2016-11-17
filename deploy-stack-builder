@@ -2,6 +2,6 @@
 
 aws cloudformation update-stack \
     --stack-name stack-builder \
-    --template-body file:///mnt/c/src/aws-infra/pipeline.yaml \
+    --template-body file://$(readlink -f pipeline.yaml) \
     --capabilities CAPABILITY_NAMED_IAM \
     --parameters ParameterKey=GitHubToken,ParameterValue=$(cat github_oauth_token)

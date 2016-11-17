@@ -7,8 +7,6 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       RoleName: lambda-service-role
-      # ManagedPolicyArns:
-      #   - arn:aws:iam::aws:policy/AdministratorAccess
       Policies:
       - PolicyName: lambda-policy
         PolicyDocument:
