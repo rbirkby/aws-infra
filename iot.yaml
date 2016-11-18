@@ -2,13 +2,12 @@ Description: |
   Creates lambda functions for iot. https://github.com/rbirkby/aws-infra
 
 Resources:
-
   LambdaRole:
     Type: AWS::IAM::Role
     Properties:
       RoleName: lambda-service-role
       Policies:
-      - PolicyName: lambda-policy
+      - PolicyName: lambda-cloudwatch-policy
         PolicyDocument:
           Version: 2012-10-17
           Statement:
@@ -31,14 +30,32 @@ Resources:
     Properties:
       Code:
         ZipFile: >
-          exports.myFunction = (event, context, callback) => {
-            console.log('hello world');
+          'use strict';
 
-            callback();
-          }
+          exports.skill = (event, context, callback) => {
+              callback(null, {
+                  version: "1.0",
+                  sessionAttributes: event.session.attributes,
+                  response: {
+                      outputSpeech: {
+                          type: "PlainText",
+                          text: "Hello World"
+                      },
+                      shouldEndSession: true
+                  }
+              });
+          };
+
       Description: Lambda function for iot
-      FunctionName: first-lambda
-      Handler: index.myFunction
+      FunctionName: hello-world-skill
+      Handler: index.skill
       Role: !GetAtt LambdaRole.Arn
       Runtime: nodejs4.3
       Timeout: 60
+
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Lambda
+      Action: lambda:InvokeFunction
+      Principal: alexa-appkit.amazon.com
