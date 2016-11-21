@@ -1,7 +1,7 @@
 #!/bin/bash
 
-aws cloudformation update-stack \
+aws cloudformation deploy \
     --stack-name stack-builder \
-    --template-body file://$(readlink -f pipeline.yaml) \
+    --template-file $(readlink -f pipeline.yaml) \
     --capabilities CAPABILITY_NAMED_IAM \
-    --parameters ParameterKey=GitHubToken,ParameterValue=$(cat github_oauth_token)
+    --parameter-overrides ParameterKey=GitHubToken,ParameterValue=$(cat github_oauth_token)
