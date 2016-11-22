@@ -121,6 +121,19 @@ Resources:
                 StackName: iot 
                 TemplatePath: SourceTree::iot.yaml                
                 Capabilities: CAPABILITY_NAMED_IAM 
+            - Name: server
+              InputArtifacts: 
+                - Name: SourceTree
+              ActionTypeId: 
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration: 
+                ActionMode: CREATE_UPDATE
+                RoleArn: !GetAtt CloudFormationServiceRole.Arn
+                StackName: server 
+                TemplatePath: SourceTree::server.yaml                 
       ArtifactStore: 
         Type: S3
         Location: !Ref DummyBucket

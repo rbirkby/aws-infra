@@ -1,0 +1,29 @@
+Description: |
+  Simple EC2 example in an ASG. https://github.com/rbirkby/aws-infra
+
+Resources:
+  ScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier: 
+        - !ImportValue vpc-PublicSubnet1
+        - !ImportValue vpc-PublicSubnet2
+        - !ImportValue vpc-PublicSubnet3
+      LaunchConfigurationName: !Ref LaunchConfig
+      DesiredCapacity: 0
+      MinSize: 0
+      MaxSize: 0
+
+  LaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration    
+    Properties:
+      ImageId: ami-9398d3e0
+      SecurityGroups: [!Ref SecurityGroup]
+      InstanceType: t2.medium
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Default SG for the server. No ingress.
+      VpcId: !ImportValue vpc-VPCID
+      
