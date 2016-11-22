@@ -9,3 +9,46 @@ Resources:
       Tags:
         - {Key: Name, Value: TestVPC}
         - {Key: environment, Value: dev}  
+
+  PublicSubnet1: 
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs ]
+      CidrBlock: 10.20.1.0/24
+      MapPublicIpOnLaunch: true
+
+  PublicSubnet2: 
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 1, !GetAZs ]
+      CidrBlock: 10.20.2.0/24
+      MapPublicIpOnLaunch: true
+
+  PublicSubnet3: 
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 2, !GetAZs ]
+      CidrBlock: 10.20.3.0/24
+      MapPublicIpOnLaunch: true
+
+Outputs:
+  VPCID:
+    Value: !Ref VPC
+    Export:
+      Name: !Sub ${AWS::StackName}-VPCID
+  PublicSubnet1:
+    Value: !Ref PublicSubnet1
+    Export:
+      Name: !Sub ${AWS::StackName}-PublicSubnet1
+  PublicSubnet2:
+    Value: !Ref PublicSubnet2
+    Export:
+      Name: !Sub ${AWS::StackName}-PublicSubnet2
+  PublicSubnet3:
+    Value: !Ref PublicSubnet3    
+    Export:
+      Name: !Sub ${AWS::StackName}-PublicSubnet3
+    
