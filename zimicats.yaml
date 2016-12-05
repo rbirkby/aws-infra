@@ -25,6 +25,13 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: zimicats-minecraft-backup
+      LifecycleConfiguration:
+        Rules:
+        - Id: transition-to-infrequent-access
+          Status: Enabled
+          Transitions:
+          - StorageClass: STANDARD_IA 
+            TransitionInDays: 30
       Tags:
         - {Key: environment, Value: prod}  
 
