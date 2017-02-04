@@ -20,12 +20,9 @@ Resources:
         PolicyDocument:
           Version: 2012-10-17
           Statement:
-            Action:
-                - "iot:Publish"
-            Resource:
-                - "arn:aws:iot:eu-west-1:122053366500:topic/commands"
             Effect: Allow
-            Sid: PermissionForObjectOperations
+            Action: iot:Publish
+            Resource: "arn:aws:iot:eu-west-1:122053366500:topic/commands"
 
   Lambda:
     Type: AWS::Lambda::Function
@@ -44,8 +41,8 @@ Resources:
                   qos: 0
               };
           
-              iotdata.publish(params, function(err, data){
-                  if(err){
+              iotdata.publish(params, (err, data) => {
+                  if(err) {
                       console.log(err);
                   } else {
                       callback(null, {
@@ -67,7 +64,7 @@ Resources:
           };
 
 
-      Description: Lambda function for iot
+      Description: Connect Alexa to Reactive LEDs
       FunctionName: visualization-skill
       Handler: index.skill
       Role: !GetAtt LambdaRole.Arn
