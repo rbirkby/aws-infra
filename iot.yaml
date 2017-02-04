@@ -1,5 +1,5 @@
 Description: |
-  Creates lambda functions for iot. https://github.com/rbirkby/aws-infra
+  Creates lambda functions for Reactive LEDs via AWS IoT. https://github.com/rbirkby/aws-infra
 
 Resources:
   LambdaRole:
@@ -35,34 +35,44 @@ Resources:
           var iotdata = new AWS.IotData({endpoint: 'a2wkex2gd7mljx.iot.eu-west-1.amazonaws.com'});
 
           exports.skill = (event, context, callback) => {
-              var params = {
-                  topic: 'commands',
-                  payload: JSON.stringify({message: event.request.intent.slots.Visualization.value}),
-                  qos: 0
-              };
+              // Prevent unauthorized skills using this lambda function
+              if (event.session.application.applicationId !== 'amzn1.ask.skill.d8c73870-1487-46c0-a715-ba78589f2f31') {
+                  callback('Invalid Application ID');
+              }
 
-              iotdata.publish(params, (err, data) => {
-                  if(err) {
-                      console.log(err);
-                  } else {
-                      callback(null, {
-                          version: "1.0",
-                          sessionAttributes: event.session.attributes,
-                          response: {
-                              outputSpeech: {
-                                  type: "PlainText",
-                                  text: "Lights to " + JSON.stringify(event.request.intent.slots.Visualization.value)
-                              },
-                              shouldEndSession: true
-                          }
-                      });
+              if (event.request.type === "IntentRequest") {
+                var newVisualization = event.request.intent.slots.Visualization.value;
+                var params = {
+                    topic: 'commands',
+                    payload: JSON.stringify({message: newVisualization}),
+                    qos: 0
+                };
 
-                      console.log("success");
-                      context.succeed(event);
-                  }
-              });
+                // Publish the command via AWS IoT mqtt message queue
+                iotdata.publish(params, (err, data) => {
+                    if(err) {
+                        console.log(`Unable to switch lights to ${newVisualization}`, err);
+                        callback(err)
+                    } else {
+                        // Respond to the Echo with the results
+                        callback(null, {
+                            version: "1.0",
+                            sessionAttributes: event.session.attributes,
+                            response: {
+                                outputSpeech: {
+                                    type: "PlainText",
+                                    text: `Lights to ${newVisualization}`
+                                },
+                                shouldEndSession: true
+                            }
+                        });
+
+                        console.log(`Successfully switched lights to ${newVisualization}`);
+                        context.succeed(event);
+                    }
+                });
+              }
           };
-
 
       Description: Connect Alexa to Reactive LEDs
       FunctionName: visualization-skill
