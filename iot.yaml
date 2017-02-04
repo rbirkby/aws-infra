@@ -16,7 +16,7 @@ Resources:
             Service: lambda.amazonaws.com
           Action: sts:AssumeRole
       Policies:
-      - PolicyName: write-to-reactive-leds-queue 
+      - PolicyName: write-to-reactive-leds-queue
         PolicyDocument:
           Version: 2012-10-17
           Statement:
@@ -40,7 +40,7 @@ Resources:
                   payload: JSON.stringify({message: event.request.intent.slots.Visualization.value}),
                   qos: 0
               };
-          
+
               iotdata.publish(params, (err, data) => {
                   if(err) {
                       console.log(err);
@@ -56,7 +56,7 @@ Resources:
                               shouldEndSession: true
                           }
                       });
-                      
+
                       console.log("success");
                       context.succeed(event);
                   }

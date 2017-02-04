@@ -5,7 +5,7 @@ Resources:
   ScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      VPCZoneIdentifier: 
+      VPCZoneIdentifier:
         - !ImportValue vpc-PublicSubnet1
         - !ImportValue vpc-PublicSubnet2
         - !ImportValue vpc-PublicSubnet3
@@ -15,15 +15,36 @@ Resources:
       MaxSize: 0
 
   LaunchConfig:
-    Type: AWS::AutoScaling::LaunchConfiguration    
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          packages:
+          groups:
+          users:
+          sources:
+          files:
+          commands:
+            test:
+              command: "echo \"$CFNTEST\" > test.txt"
+              env:
+                CFNTEST: "I come from config."
+              cwd: "~"
+          services:
     Properties:
       ImageId: ami-9398d3e0
       SecurityGroups: [!Ref SecurityGroup]
       InstanceType: t2.medium
+      UserData:
+        "Fn::Base64": !Sub |
+            #!/bin/bash
+            yum install -y aws-cfn-bootstrap
+            /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource LaunchConfig
+            /opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource ScalingGroup
+
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Default SG for the server. No ingress.
       VpcId: !ImportValue vpc-VPCID
-      

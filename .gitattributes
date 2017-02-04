@@ -1,1 +1,2 @@
 provision   text eol=lf
+*.yaml text eol=crlf

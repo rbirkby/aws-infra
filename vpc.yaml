@@ -8,9 +8,9 @@ Resources:
       CidrBlock: 10.20.0.0/16
       Tags:
         - {Key: Name, Value: TestVPC}
-        - {Key: environment, Value: dev}  
+        - {Key: environment, Value: dev}
 
-  PublicSubnet1: 
+  PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
@@ -18,7 +18,7 @@ Resources:
       CidrBlock: 10.20.1.0/24
       MapPublicIpOnLaunch: true
 
-  PublicSubnet2: 
+  PublicSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
@@ -26,7 +26,7 @@ Resources:
       CidrBlock: 10.20.2.0/24
       MapPublicIpOnLaunch: true
 
-  PublicSubnet3: 
+  PublicSubnet3:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
@@ -48,7 +48,6 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-PublicSubnet2
   PublicSubnet3:
-    Value: !Ref PublicSubnet3    
+    Value: !Ref PublicSubnet3
     Export:
       Name: !Sub ${AWS::StackName}-PublicSubnet3
-    

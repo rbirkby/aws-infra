@@ -2,7 +2,7 @@ Description: |
   AWS CodePipeline for deploying CloudFormation templates. https://github.com/rbirkby/aws-infra
 
 Parameters:
-  GitHubToken: 
+  GitHubToken:
     Type: String
     Description: GitHub OAuth Personal Access Token with admin:repo_hook and repo scopes
 
@@ -12,7 +12,7 @@ Resources:
     Properties:
       BucketName: codepipeline-dummy-artifactstore
       Tags:
-        - {Key: environment, Value: prod}  
+        - {Key: environment, Value: prod}
 
   CloudFormationServiceRole:
     Type: AWS::IAM::Role
@@ -59,81 +59,81 @@ Resources:
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
-    Properties: 
+    Properties:
       Name: stack-builder
       RoleArn: !GetAtt CodePipelineServiceRole.Arn
-      Stages: 
+      Stages:
         - Name: Source
-          Actions: 
+          Actions:
             - Name: SourceAction
-              ActionTypeId: 
+              ActionTypeId:
                 Category: Source
                 Owner: ThirdParty
                 Version: 1
                 Provider: GitHub
-              OutputArtifacts: 
+              OutputArtifacts:
                 - Name: SourceTree
-              Configuration: 
+              Configuration:
                 Owner: rbirkby
                 Repo: aws-infra
                 Branch: master
                 OAuthToken: !Ref GitHubToken
         - Name: infrastructure-builder
-          Actions: 
+          Actions:
             - Name: vpc
-              InputArtifacts: 
+              InputArtifacts:
                 - Name: SourceTree
-              ActionTypeId: 
+              ActionTypeId:
                 Category: Deploy
                 Owner: AWS
                 Version: 1
                 Provider: CloudFormation
-              Configuration: 
+              Configuration:
                 ActionMode: CREATE_UPDATE
                 RoleArn: !GetAtt CloudFormationServiceRole.Arn
-                StackName: vpc 
+                StackName: vpc
                 TemplatePath: SourceTree::vpc.yaml
             - Name: zimicats
-              InputArtifacts: 
+              InputArtifacts:
                 - Name: SourceTree
-              ActionTypeId: 
+              ActionTypeId:
                 Category: Deploy
                 Owner: AWS
                 Version: 1
                 Provider: CloudFormation
-              Configuration: 
+              Configuration:
                 ActionMode: CREATE_UPDATE
                 RoleArn: !GetAtt CloudFormationServiceRole.Arn
                 StackName: zimicats
-                TemplatePath: SourceTree::zimicats.yaml 
-                Capabilities: CAPABILITY_NAMED_IAM 
+                TemplatePath: SourceTree::zimicats.yaml
+                Capabilities: CAPABILITY_NAMED_IAM
             - Name: iot
-              InputArtifacts: 
+              InputArtifacts:
                 - Name: SourceTree
-              ActionTypeId: 
+              ActionTypeId:
                 Category: Deploy
                 Owner: AWS
                 Version: 1
                 Provider: CloudFormation
-              Configuration: 
+              Configuration:
                 ActionMode: CREATE_UPDATE
                 RoleArn: !GetAtt CloudFormationServiceRole.Arn
-                StackName: iot 
-                TemplatePath: SourceTree::iot.yaml                
-                Capabilities: CAPABILITY_NAMED_IAM 
+                StackName: iot
+                TemplatePath: SourceTree::iot.yaml
+                Capabilities: CAPABILITY_NAMED_IAM
             - Name: server
-              InputArtifacts: 
+              InputArtifacts:
                 - Name: SourceTree
-              ActionTypeId: 
+              ActionTypeId:
                 Category: Deploy
                 Owner: AWS
                 Version: 1
                 Provider: CloudFormation
-              Configuration: 
+              Configuration:
                 ActionMode: CREATE_UPDATE
                 RoleArn: !GetAtt CloudFormationServiceRole.Arn
-                StackName: server 
-                TemplatePath: SourceTree::server.yaml                 
-      ArtifactStore: 
+                StackName: server
+                TemplatePath: SourceTree::server.yaml
+      ArtifactStore:
         Type: S3
         Location: !Ref DummyBucket

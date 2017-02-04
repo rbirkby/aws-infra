@@ -7,7 +7,7 @@ Resources:
     Properties:
       UserName: zimicats-minecraft
       Policies:
-      - PolicyName: write-to-backup-bucket 
+      - PolicyName: write-to-backup-bucket
         PolicyDocument:
           Version: 2012-10-17
           Statement:
@@ -30,10 +30,10 @@ Resources:
         - Id: transition-to-infrequent-access
           Status: Enabled
           Transitions:
-          - StorageClass: STANDARD_IA 
+          - StorageClass: STANDARD_IA
             TransitionInDays: 30
       Tags:
-        - {Key: environment, Value: prod}  
+        - {Key: environment, Value: prod}
 
   AccessKey:
     Type: AWS::IAM::AccessKey
