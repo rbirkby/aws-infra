@@ -5,7 +5,7 @@ Resources:
   LambdaRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: lambda-service-role
+      RoleName: reative-leds-service-role
       ManagedPolicyArns:
       - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       AssumeRolePolicyDocument:
@@ -15,6 +15,17 @@ Resources:
           Principal:
             Service: lambda.amazonaws.com
           Action: sts:AssumeRole
+      Policies:
+      - PolicyName: write-to-reactive-leds-queue 
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            Action:
+                - "iot:Publish"
+            Resource:
+                - "arn:aws:iot:eu-west-1:122053366500:topic/commands"
+            Effect: Allow
+            Sid: PermissionForObjectOperations
 
   Lambda:
     Type: AWS::Lambda::Function
@@ -23,22 +34,41 @@ Resources:
         ZipFile: >
           'use strict';
 
+          var AWS = require('aws-sdk');
+          var iotdata = new AWS.IotData({endpoint: 'a2wkex2gd7mljx.iot.eu-west-1.amazonaws.com'});
+
           exports.skill = (event, context, callback) => {
-              callback(null, {
-                  version: "1.0",
-                  sessionAttributes: event.session.attributes,
-                  response: {
-                      outputSpeech: {
-                          type: "PlainText",
-                          text: "Hello World"
-                      },
-                      shouldEndSession: true
+              var params = {
+                  topic: 'commands',
+                  payload: JSON.stringify({message: event.request.intent.slots.Visualization.value}),
+                  qos: 0
+              };
+          
+              iotdata.publish(params, function(err, data){
+                  if(err){
+                      console.log(err);
+                  } else {
+                      callback(null, {
+                          version: "1.0",
+                          sessionAttributes: event.session.attributes,
+                          response: {
+                              outputSpeech: {
+                                  type: "PlainText",
+                                  text: "Lights to " + JSON.stringify(event.request.intent.slots.Visualization.value)
+                              },
+                              shouldEndSession: true
+                          }
+                      });
+                      
+                      console.log("success");
+                      context.succeed(event);
                   }
               });
           };
 
+
       Description: Lambda function for iot
-      FunctionName: hello-world-skill
+      FunctionName: visualization-skill
       Handler: index.skill
       Role: !GetAtt LambdaRole.Arn
       Runtime: nodejs4.3
