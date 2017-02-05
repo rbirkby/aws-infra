@@ -1,0 +1,13 @@
+{
+  "intents": [
+    {
+      "intent": "VisualizationIntent",
+      "slots": [
+        {
+          "name": "Visualization",
+          "type": "LIST_OF_VISUALIZATIONS"
+        }
+      ]
+    }
+  ]
+}
