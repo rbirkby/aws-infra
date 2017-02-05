@@ -19,6 +19,8 @@ aws cloudformation deploy \
 Supports voice requests sent from an Alexa device such as an Amazon Echo, processing those requests in a Lambda function and
 sending commands down an MQTT queue using AWS IoT. 
 
+![](/content/aws-infra-iot.png)
+
 This CloudFormation template is stand-alone, except for the IoT certificate.
 
 The device end of the AWS IoT queue is a Raspberry Pi 3 running [music visualization](https://github.com/scottlawsonbc/audio-reactive-led-strip)
