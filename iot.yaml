@@ -121,9 +121,9 @@ Resources:
                       response: {
                           outputSpeech: {
                               type: "PlainText",
-                              text: `I support 3 visualizations; spectrum, scroll and energy. For example, alexa, ask kitchen lights to show spectrum`
+                              text: `I support 3 visualizations; spectrum, scroll and energy. For example, alexa, ask kitchen lights to show spectrum. Which visualization would you like?`
                           },
-                          shouldEndSession: true
+                          shouldEndSession: false
                       }
                   });
               } else if (event.request.type === "IntentRequest" && event.request.intent.name === "EasterEggIntent") {
