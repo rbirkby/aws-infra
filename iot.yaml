@@ -1,6 +1,17 @@
 Description: |
   Creates lambda functions for Reactive LEDs via AWS IoT. https://github.com/rbirkby/aws-infra
 
+Parameters:
+  IoTEndpoint:
+    Type: String
+    Default: a2wkex2gd7mljx.iot.eu-west-1.amazonaws.com
+  AlexaApplicationId:
+    Type: String
+    Default: amzn1.ask.skill.d8c73870-1487-46c0-a715-ba78589f2f31
+  IoTCertificate:
+    Type: String
+    Default: arn:aws:iot:eu-west-1:122053366500:cert/690eaa3ebc8377d8e2c959a3499df4c619b4b3b6b38b55d02906d4a4ca0c66f9
+
 Resources:
   LambdaRole:
     Type: AWS::IAM::Role
@@ -27,16 +38,21 @@ Resources:
   Lambda:
     Type: AWS::Lambda::Function
     Properties:
+      Environment:
+        Variables:
+         IOT_ENDPOINT: !Ref IoTEndpoint
+         ALEXA_APPLICATION: !Ref AlexaApplicationId
+
       Code:
         ZipFile: >
           'use strict';
 
           var AWS = require('aws-sdk');
-          var iotdata = new AWS.IotData({endpoint: 'a2wkex2gd7mljx.iot.eu-west-1.amazonaws.com'});
+          var iotdata = new AWS.IotData({endpoint: process.env.IOT_ENDPOINT});
 
           exports.skill = (event, context, callback) => {
               // Prevent unauthorized skills using this lambda function
-              if (event.session.application.applicationId !== 'amzn1.ask.skill.d8c73870-1487-46c0-a715-ba78589f2f31') {
+              if (event.session.application.applicationId !== process.env.ALEXA_APPLICATION) {
                   callback('Invalid Application ID');
               }
 
@@ -147,7 +163,7 @@ Resources:
   IotDeviceSecurity:
     Type: AWS::IoT::ThingPrincipalAttachment
     Properties:
-      Principal: !Sub arn:aws:iot:eu-west-1:${AWS::AccountId}:cert/690eaa3ebc8377d8e2c959a3499df4c619b4b3b6b38b55d02906d4a4ca0c66f9
+      Principal: !Ref IoTCertificate
       ThingName: !Ref IotDevice
 
   IotPolicy:
@@ -168,5 +184,5 @@ Resources:
   IotSecurityPolicy:
     Type: AWS::IoT::PolicyPrincipalAttachment
     Properties:
-      Principal: !Sub arn:aws:iot:eu-west-1:${AWS::AccountId}:cert/690eaa3ebc8377d8e2c959a3499df4c619b4b3b6b38b55d02906d4a4ca0c66f9
+      Principal: !Ref IoTCertificate
       PolicyName: !Ref IotPolicy
