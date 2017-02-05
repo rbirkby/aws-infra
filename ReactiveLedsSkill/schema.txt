@@ -8,6 +8,9 @@
           "type": "LIST_OF_VISUALIZATIONS"
         }
       ]
+    },
+    {
+      "intent": "AMAZON.HelpIntent"
     }
   ]
 }
