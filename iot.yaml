@@ -22,7 +22,7 @@ Resources:
           Statement:
             Effect: Allow
             Action: iot:Publish
-            Resource: "arn:aws:iot:eu-west-1:122053366500:topic/commands"
+            Resource: !Sub arn:aws:iot:eu-west-1:${AWS::AccountId}:topic/commands
 
   Lambda:
     Type: AWS::Lambda::Function
@@ -100,7 +100,7 @@ Resources:
   IotDeviceSecurity:
     Type: AWS::IoT::ThingPrincipalAttachment
     Properties:
-      Principal: arn:aws:iot:eu-west-1:122053366500:cert/690eaa3ebc8377d8e2c959a3499df4c619b4b3b6b38b55d02906d4a4ca0c66f9
+      Principal: !Sub arn:aws:iot:eu-west-1:${AWS::AccountId}:cert/690eaa3ebc8377d8e2c959a3499df4c619b4b3b6b38b55d02906d4a4ca0c66f9
       ThingName: !Ref IotDevice
 
   IotPolicy:
@@ -121,5 +121,5 @@ Resources:
   IotSecurityPolicy:
     Type: AWS::IoT::PolicyPrincipalAttachment
     Properties:
-      Principal: arn:aws:iot:eu-west-1:122053366500:cert/690eaa3ebc8377d8e2c959a3499df4c619b4b3b6b38b55d02906d4a4ca0c66f9
+      Principal: !Sub arn:aws:iot:eu-west-1:${AWS::AccountId}:cert/690eaa3ebc8377d8e2c959a3499df4c619b4b3b6b38b55d02906d4a4ca0c66f9
       PolicyName: !Ref IotPolicy
