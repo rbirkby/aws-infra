@@ -41,36 +41,40 @@ Resources:
               }
 
               if (event.request.type === "IntentRequest") {
-                var newVisualization = event.request.intent.slots.Visualization.value;
-                var params = {
-                    topic: 'commands',
-                    payload: JSON.stringify({message: newVisualization}),
-                    qos: 0
-                };
+                  var newVisualization = event.request.intent.slots.Visualization.value;
+                  if (['spectrum', 'energy', 'scroll'].indexOf(newVisualization) > -1) {
+                      var params = {
+                          topic: 'commands',
+                          payload: JSON.stringify({message: newVisualization}),
+                          qos: 0
+                      };
 
-                // Publish the command via AWS IoT mqtt message queue
-                iotdata.publish(params, (err, data) => {
-                    if(err) {
-                        console.log(`Unable to switch lights to ${newVisualization}`, err);
-                        callback(err)
-                    } else {
-                        // Respond to the Echo with the results
-                        callback(null, {
-                            version: "1.0",
-                            sessionAttributes: event.session.attributes,
-                            response: {
-                                outputSpeech: {
-                                    type: "PlainText",
-                                    text: `Lights to ${newVisualization}`
-                                },
-                                shouldEndSession: true
-                            }
-                        });
+                      // Publish the command via AWS IoT mqtt message queue
+                      iotdata.publish(params, (err, data) => {
+                          if(err) {
+                              console.log(`Unable to switch lights to ${newVisualization}`, err);
+                              callback(err)
+                          } else {
+                              // Respond to the Echo with the results
+                              callback(null, {
+                                  version: "1.0",
+                                  sessionAttributes: event.session.attributes,
+                                  response: {
+                                      outputSpeech: {
+                                          type: "PlainText",
+                                          text: `Lights to ${newVisualization}`
+                                      },
+                                      shouldEndSession: true
+                                  }
+                              });
 
-                        console.log(`Successfully switched lights to ${newVisualization}`);
-                        context.succeed(event);
-                    }
-                });
+                              console.log(`Successfully switched lights to ${newVisualization}`);
+                              context.succeed(event);
+                          }
+                      });
+                  } else {
+                      callback(`Unknown visualization ${newVisualization}`);
+                  }
               }
           };
 
@@ -87,3 +91,35 @@ Resources:
       FunctionName: !Ref Lambda
       Action: lambda:InvokeFunction
       Principal: alexa-appkit.amazon.com
+
+  IotDevice:
+    Type: AWS::IoT::Thing
+    Properties:
+      ThingName: ReactiveLeds
+
+  IotDeviceSecurity:
+    Type: AWS::IoT::ThingPrincipalAttachment
+    Properties:
+      Principal: arn:aws:iot:eu-west-1:122053366500:cert/690eaa3ebc8377d8e2c959a3499df4c619b4b3b6b38b55d02906d4a4ca0c66f9
+      ThingName: !Ref IotDevice
+
+  IotPolicy:
+    Type: AWS::IoT::Policy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Action:
+              - iot:Publish
+              - iot:Subscribe
+              - iot:Connect
+              - iot:Receive
+          Resource: "*"
+          Effect: Allow
+      PolicyName: reactiveleds-policy
+
+  IotSecurityPolicy:
+    Type: AWS::IoT::PolicyPrincipalAttachment
+    Properties:
+      Principal: arn:aws:iot:eu-west-1:122053366500:cert/690eaa3ebc8377d8e2c959a3499df4c619b4b3b6b38b55d02906d4a4ca0c66f9
+      PolicyName: !Ref IotPolicy
