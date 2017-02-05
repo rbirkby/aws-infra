@@ -1,3 +1,6 @@
 VisualizationIntent Show {Visualization}
+VisualizationIntent Show {Visualization} effect
 VisualizationIntent {Visualization}
+VisualizationIntent {Visualization} effect
 VisualizationIntent Turn on {Visualization}
+EasterEggIntent Turbo boost

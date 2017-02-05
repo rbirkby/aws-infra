@@ -10,6 +10,10 @@
       ]
     },
     {
+      "intent": "EasterEggIntent",
+      "slots":[]
+    },
+    {
       "intent": "AMAZON.HelpIntent"
     }
   ]

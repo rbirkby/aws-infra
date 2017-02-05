@@ -41,7 +41,19 @@ Resources:
               }
 
               console.log(JSON.stringify(event.request));
-              if (event.request.type === "IntentRequest" && event.request.intent.name === "VisualizationIntent") {
+              if (event.request.type === "LaunchRequest") {
+                  callback(null, {
+                      version: "1.0",
+                      sessionAttributes: event.session.attributes,
+                      response: {
+                          outputSpeech: {
+                              type: "PlainText",
+                              text: 'Which visualization would you like?'
+                          },
+                          shouldEndSession: false
+                      }
+                  });                  
+              } else if (event.request.type === "IntentRequest" && event.request.intent.name === "VisualizationIntent") {
                   var newVisualization = event.request.intent.slots.Visualization.value;
                   if (['spectrum', 'energy', 'scroll'].indexOf(newVisualization) > -1) {
                       var params = {
@@ -87,17 +99,29 @@ Resources:
                       console.log(`Unknown visualization ${newVisualization}`);
                   }
               } else if (event.request.type === "IntentRequest" && event.request.intent.name === 'AMAZON.HelpIntent') {
-                      callback(null, {
-                          version: "1.0",
-                          sessionAttributes: event.session.attributes,
-                          response: {
-                              outputSpeech: {
-                                  type: "PlainText",
-                                  text: `I support 3 visualizations; spectrum, scroll and energy. For example, alexa, ask kitchen lights to show spectrum`
-                              },
-                              shouldEndSession: true
-                          }
-                      });
+                  callback(null, {
+                      version: "1.0",
+                      sessionAttributes: event.session.attributes,
+                      response: {
+                          outputSpeech: {
+                              type: "PlainText",
+                              text: `I support 3 visualizations; spectrum, scroll and energy. For example, alexa, ask kitchen lights to show spectrum`
+                          },
+                          shouldEndSession: true
+                      }
+                  });
+              } else if (event.request.type === "IntentRequest" && event.request.intent.name === "EasterEggIntent") {
+                  callback(null, {
+                      version: "1.0",
+                      sessionAttributes: event.session.attributes,
+                      response: {
+                          outputSpeech: {
+                              type: "SSML",
+                              ssml: '<speak><audio src="https://s3-eu-west-1.amazonaws.com/alexa-audio-samples/some+unusual+readings.mp3" /></speak>'
+                          },
+                          shouldEndSession: true
+                      }
+                  });
               }
           };
 
