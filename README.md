@@ -1,6 +1,6 @@
 # aws-infra
 
-Continuous Deployment (CD) Infrastructure code/examples.
+Continuous Deployment (CD) Infrastructure code/examples for AWS using CloudFormation.
 
 Changes are deployed automatically using the CodeDeploy pipeline from GitHub.
 If changes need to be trialed before committing, use the following script:
