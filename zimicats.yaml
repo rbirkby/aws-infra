@@ -1,6 +1,11 @@
 Description: |
   Backs up the zimicats and timetomine server. https://github.com/rbirkby/aws-infra
 
+Parameters:
+  BucketName:
+    Type: String
+    Default: zimicats-minecraft-backup
+
 Resources:
   User:
     Type: AWS::IAM::User
@@ -24,7 +29,7 @@ Resources:
   Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: zimicats-minecraft-backup
+      BucketName: !Ref BucketName
       LifecycleConfiguration:
         Rules:
         - Id: transition-to-infrequent-access
