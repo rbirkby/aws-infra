@@ -51,93 +51,93 @@ Resources:
           var iotdata = new AWS.IotData({endpoint: process.env.IOT_ENDPOINT});
 
           exports.skill = (event, context, callback) => {
-              // Prevent unauthorized skills using this lambda function
-              if (event.session.application.applicationId !== process.env.ALEXA_APPLICATION) {
-                  callback('Invalid Application ID');
-              }
-
-              console.log(JSON.stringify(event.request));
-              if (event.request.type === "LaunchRequest") {
+              function startConversation(text) {
                   callback(null, {
                       version: "1.0",
                       sessionAttributes: event.session.attributes,
                       response: {
                           outputSpeech: {
                               type: "PlainText",
-                              text: 'Which visualization would you like?'
+                              text: text
                           },
                           shouldEndSession: false
                       }
                   });                  
-              } else if (event.request.type === "IntentRequest" && event.request.intent.name === "VisualizationIntent") {
-                  var newVisualization = event.request.intent.slots.Visualization.value;
-                  if (['spectrum', 'energy', 'scroll'].indexOf(newVisualization) > -1) {
-                      var params = {
-                          topic: 'commands',
-                          payload: JSON.stringify({message: newVisualization}),
-                          qos: 0
-                      };
+              }
 
-                      // Publish the command via AWS IoT mqtt message queue
-                      iotdata.publish(params, (err, data) => {
-                          if(err) {
-                              console.log(`Unable to switch lights to ${newVisualization}`, err);
-                              callback(err)
-                          } else {
-                              // Respond to the Echo with the results
-                              callback(null, {
-                                  version: "1.0",
-                                  sessionAttributes: event.session.attributes,
-                                  response: {
-                                      outputSpeech: {
-                                          type: "PlainText",
-                                          text: `Lights to ${newVisualization}`
-                                      },
-                                      shouldEndSession: true
-                                  }
-                              });
-
-                              console.log(`Successfully switched lights to ${newVisualization}`);
-                          }
-                      });
-                  } else {
-                      callback(null, {
-                          version: "1.0",
-                          sessionAttributes: event.session.attributes,
-                          response: {
-                              outputSpeech: {
-                                  type: "PlainText",
-                                  text: `Unknown visualization ${newVisualization}`
-                              },
-                              shouldEndSession: true
-                          }
-                      });
-                      console.log(`Unknown visualization ${newVisualization}`);
-                  }
-              } else if (event.request.type === "IntentRequest" && event.request.intent.name === 'AMAZON.HelpIntent') {
+              function endConversation(text) {
                   callback(null, {
                       version: "1.0",
                       sessionAttributes: event.session.attributes,
                       response: {
                           outputSpeech: {
                               type: "PlainText",
-                              text: `I support 3 visualizations; spectrum, scroll and energy. For example, alexa, ask kitchen lights to show spectrum. Which visualization would you like?`
+                              text: text
                           },
-                          shouldEndSession: false
+                          shouldEndSession: true
                       }
-                  });
-              } else if (event.request.type === "IntentRequest" && event.request.intent.name === "EasterEggIntent") {
+                  });  
+              }
+
+              function endSsmlConversation(ssml) {
                   callback(null, {
                       version: "1.0",
                       sessionAttributes: event.session.attributes,
                       response: {
                           outputSpeech: {
                               type: "SSML",
-                              ssml: '<speak><audio src="https://s3-eu-west-1.amazonaws.com/alexa-audio-samples/some+unusual+readings.mp3" /></speak>'
+                              ssml: ssml
                           },
                           shouldEndSession: true
                       }
                   });
+              }
+
+              // Prevent unauthorized skills using this lambda function
+              if (event.session.application.applicationId !== process.env.ALEXA_APPLICATION) {
+                  callback('Invalid Application ID');
+              }
+
+              console.log(JSON.stringify(event.request));
+
+              if (event.request.type === "LaunchRequest") {
+                  startConversation('Which visualization would you like?');
+              } else if (event.request.type === "IntentRequest") {
+                  let intentName = event.request.intent.name;
+
+                  switch(intentName) {
+                      case "VisualizationIntent":
+                          let newVisualization = event.request.intent.slots.Visualization.value;
+                          if (['spectrum', 'energy', 'scroll'].indexOf(newVisualization) > -1) {
+                              var params = {
+                                  topic: 'commands',
+                                  payload: JSON.stringify({message: newVisualization}),
+                                  qos: 0
+                              };
+
+                              // Publish the command via AWS IoT mqtt message queue
+                              iotdata.publish(params).promise()
+                                  .then(data => {
+                                      // Respond to the Echo with the results
+                                      endConversation(`Lights to ${newVisualization}`);
+
+                                      console.log(`Successfully switched lights to ${newVisualization}`);
+                                  }).catch(err => {
+                                      console.log(`Unable to switch lights to ${newVisualization}`, err);
+                                      callback(err);
+                                  });
+                          } else {
+                              endConversation(`Unknown visualization ${newVisualization}`);
+                              console.log(`Unknown visualization ${newVisualization}`);
+                          }
+                          break;
+                      case "AMAZON.HelpIntent":
+                          startConversation(`I support 3 visualizations; spectrum, scroll and energy. For example, alexa, ask kitchen lights to show spectrum. Which visualization would you like?`);
+                          break;
+                      case "EasterEggIntent":
+                          endSsmlConversation('<speak><audio src="https://s3-eu-west-1.amazonaws.com/alexa-audio-samples/some+unusual+readings.mp3" /></speak>');
+                          break;
+                  }
               }
           };
 
