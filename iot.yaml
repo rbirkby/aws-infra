@@ -50,6 +50,10 @@ Resources:
           var AWS = require('aws-sdk');
           var iotdata = new AWS.IotData({endpoint: process.env.IOT_ENDPOINT});
 
+          process.on('unhandledRejection', (reason, promise) => {
+              console.error('Uncaught error in', promise);
+          });
+
           exports.skill = (event, context, callback) => {
               function startConversation(text) {
                   callback(null, {
@@ -62,7 +66,7 @@ Resources:
                           },
                           shouldEndSession: false
                       }
-                  });                  
+                  });
               }
 
               function endConversation(text) {
@@ -76,7 +80,7 @@ Resources:
                           },
                           shouldEndSession: true
                       }
-                  });  
+                  });
               }
 
               function endSsmlConversation(ssml) {
@@ -95,7 +99,7 @@ Resources:
 
               // Prevent unauthorized skills using this lambda function
               if (event.session.application.applicationId !== process.env.ALEXA_APPLICATION) {
-                  callback('Invalid Application ID');
+                  callback(new Error('Invalid Application ID'));
               }
 
               console.log(JSON.stringify(event.request));
@@ -103,9 +107,7 @@ Resources:
               if (event.request.type === "LaunchRequest") {
                   startConversation('Which visualization would you like?');
               } else if (event.request.type === "IntentRequest") {
-                  let intentName = event.request.intent.name;
-
-                  switch(intentName) {
+                  switch(event.request.intent.name) {
                       case "VisualizationIntent":
                           let newVisualization = event.request.intent.slots.Visualization.value;
                           if (['spectrum', 'energy', 'scroll'].indexOf(newVisualization) > -1) {
@@ -123,12 +125,14 @@ Resources:
 
                                       console.log(`Successfully switched lights to ${newVisualization}`);
                                   }).catch(err => {
-                                      console.log(`Unable to switch lights to ${newVisualization}`, err);
+                                      console.error(`Error publishing command to IoT. Unable to switch lights to ${newVisualization}`, err);
                                       callback(err);
                                   });
-                          } else {
-                              endConversation(`Unknown visualization ${newVisualization}`);
+                          } else if (newVisualization) {
+                              startConversation('I only support spectrum, scroll and energy. Which would you like?');
                               console.log(`Unknown visualization ${newVisualization}`);
+                          } else {
+                              startConversation('Which visualization was that?');
                           }
                           break;
                       case "AMAZON.HelpIntent":
@@ -136,6 +140,9 @@ Resources:
                           break;
                       case "EasterEggIntent":
                           endSsmlConversation('<speak><audio src="https://s3-eu-west-1.amazonaws.com/alexa-audio-samples/some+unusual+readings.mp3" /></speak>');
+                          break;
+                      default:
+                          startConversation('Which visualization would you like?');
                           break;
                   }
               }
@@ -148,6 +155,7 @@ Resources:
       Runtime: nodejs4.3
       Timeout: 60
 
+  # Give permission to Alexa (*any skill*) to invoke this lambda function
   LambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -155,18 +163,18 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: alexa-appkit.amazon.com
 
-  IotDevice:
+  IoTDevice:
     Type: AWS::IoT::Thing
     Properties:
       ThingName: ReactiveLeds
 
-  IotDeviceSecurity:
+  IoTDeviceSecurity:
     Type: AWS::IoT::ThingPrincipalAttachment
     Properties:
       Principal: !Ref IoTCertificate
-      ThingName: !Ref IotDevice
+      ThingName: !Ref IoTDevice
 
-  IotPolicy:
+  IoTPolicy:
     Type: AWS::IoT::Policy
     Properties:
       PolicyDocument:
@@ -185,4 +193,4 @@ Resources:
     Type: AWS::IoT::PolicyPrincipalAttachment
     Properties:
       Principal: !Ref IoTCertificate
-      PolicyName: !Ref IotPolicy
+      PolicyName: !Ref IoTPolicy
