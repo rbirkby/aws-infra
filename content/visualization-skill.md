@@ -1,9 +1,15 @@
 Visualization Skill
 ===================
 
-A fun project to control twin 5m RGB LED strips from an Amazon Echo. An Alexa skill takes voice commands from the Echo, 
-translates those into commands using an AWS Lambda function and sends the resulting commands down an AWS IoT MQTT queue to the Raspberry Pi.
-The Raspberry Pi runs music visualization software and subscribes to the MQTT IoT queue to receive commands.
+A fun project to control twin 5m RGB LED strips from an Amazon Echo. An audio feed from the Echo provides input to
+visualization software on a Raspberry Pi which drives the 10 metres of LED strips.
+
+Separately, an Alexa skill takes voice commands from the Echo, translates those into commands using an
+AWS Lambda function and sends the resulting commands down an AWS IoT MQTT queue to the Raspberry Pi.
+The Raspberry Pi running the music visualization software also subscribes to the MQTT IoT queue to 
+receive commands and update the visualization effect.
+
+![Visualization Skill](visualization-skill.gif)
 
 ## Software
 
