@@ -38,7 +38,7 @@ Resources:
           - StorageClass: STANDARD_IA
             TransitionInDays: 30
       Tags:
-        - {Key: environment, Value: prod}
+        - {Key: environment, Value: prodX}
 
   AccessKey:
     Type: AWS::IAM::AccessKey
